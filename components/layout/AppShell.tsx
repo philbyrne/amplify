@@ -64,7 +64,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
     // Always update seen IDs so we don't re-notify after enabling notifications later
     if (moments.length > 0) {
-      const allIds = [...new Set([...seenIds, ...moments.map((m) => m.id as string)])]
+      const allIds = Array.from(new Set([...seenIds, ...moments.map((m) => m.id as string)]))
       localStorage.setItem('amplify-seen-moment-ids', JSON.stringify(allIds))
     }
 

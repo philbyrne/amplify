@@ -119,7 +119,7 @@ export async function GET(req: NextRequest) {
         .select('moment_id, user_id')
         .in('moment_id', momentIds)
 
-      const userIds = [...new Set((shares || []).map((s) => s.user_id).filter(Boolean))]
+      const userIds = Array.from(new Set((shares || []).map((s) => s.user_id).filter(Boolean)))
       let userMap: Record<string, { name: string | null; avatar_url: string | null }> = {}
 
       if (userIds.length > 0) {

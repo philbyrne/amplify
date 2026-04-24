@@ -72,7 +72,7 @@ export async function GET(req: NextRequest) {
     if (sharersMap[s.moment_id].length < 10 && s.user_id) sharersMap[s.moment_id].push(s.user_id)
   }
 
-  const allSharerUserIds = [...new Set(Object.values(sharersMap).flat())]
+  const allSharerUserIds = Array.from(new Set(Object.values(sharersMap).flat()))
   let sharerUserMap: Record<string, { name: string | null; avatar_url: string | null }> = {}
   if (allSharerUserIds.length > 0) {
     const { data: sharerUsers } = await supabase

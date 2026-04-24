@@ -95,15 +95,14 @@ export default function AnalyticsPage() {
     { name: 'X', value: xCount, color: '#888' },
   ]
 
-  // Top packages
+  // Top packages (skip moment-only shares with no package_id)
   const packageCounts: Record<string, { name: string; count: number }> = {}
   for (const share of shares) {
     const pkgId = share.package_id
+    if (!pkgId) continue  // moment share — no package to credit
     if (!packageCounts[pkgId]) {
       packageCounts[pkgId] = {
-        name:
-          (share as ShareWithJoins).packages?.title ||
-          pkgId.slice(0, 8),
+        name: (share as ShareWithJoins).packages?.title || pkgId.slice(0, 8),
         count: 0,
       }
     }
@@ -286,9 +285,7 @@ export default function AnalyticsPage() {
                     ))}
                   </Pie>
                   <Legend
-                    formatter={(value) => (
-                      <span className="text-sm text-muted-foreground">{value}</span>
-                    )}
+                    formatter={(value: string) => value}
                   />
                   <Tooltip
                     contentStyle={{

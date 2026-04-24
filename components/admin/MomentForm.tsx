@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
@@ -54,6 +54,17 @@ export default function MomentForm({ moment }: Props) {
   const [platforms, setPlatforms] = useState<string[]>(moment?.platform_targets || ['linkedin', 'x'])
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
+
+  // Resize all textareas to fit content whenever parsed data changes
+  useEffect(() => {
+    if (!parsed) return
+    requestAnimationFrame(() => {
+      document.querySelectorAll<HTMLTextAreaElement>('textarea').forEach((el) => {
+        el.style.height = 'auto'
+        el.style.height = `${el.scrollHeight}px`
+      })
+    })
+  }, [parsed])
 
   async function handleParse() {
     if (!docUrl.trim()) return

@@ -29,6 +29,7 @@ interface SessionUser {
 
 interface ShareWithJoins extends Share {
   packages?: { title: string }
+  sharing_moments?: { title: string }
   users?: { name: string | null }
 }
 
@@ -95,20 +96,20 @@ export default function AnalyticsPage() {
     { name: 'X', value: xCount, color: '#888' },
   ]
 
-  // Top packages (skip moment-only shares with no package_id)
-  const packageCounts: Record<string, { name: string; count: number }> = {}
+  // Top shares by content item (packages or moments)
+  const contentCounts: Record<string, { name: string; count: number }> = {}
   for (const share of shares) {
-    const pkgId = share.package_id
-    if (!pkgId) continue  // moment share — no package to credit
-    if (!packageCounts[pkgId]) {
-      packageCounts[pkgId] = {
-        name: (share as ShareWithJoins).packages?.title || pkgId.slice(0, 8),
-        count: 0,
-      }
+    const s = share as ShareWithJoins
+    // Build a stable key: prefer package_id, fall back to moment_id
+    const key = share.package_id ? `pkg:${share.package_id}` : share.moment_id ? `mom:${share.moment_id}` : null
+    if (!key) continue
+    if (!contentCounts[key]) {
+      const title = s.packages?.title || s.sharing_moments?.title || key.slice(4, 12)
+      contentCounts[key] = { name: title, count: 0 }
     }
-    packageCounts[pkgId].count++
+    contentCounts[key].count++
   }
-  const topPackages: PackageData[] = Object.values(packageCounts)
+  const topPackages: PackageData[] = Object.values(contentCounts)
     .sort((a, b) => b.count - a.count)
     .slice(0, 8)
     .map((p) => ({ name: p.name, shares: p.count }))
@@ -315,7 +316,7 @@ export default function AnalyticsPage() {
           {/* Top packages */}
           <div className="bg-card rounded-2xl border border-border p-6">
             <h2 className="font-semibold text-foreground mb-6">
-              Top Packages by Shares
+              Top Shares for the Period
             </h2>
             {topPackages.length === 0 ? (
               <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">

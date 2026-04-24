@@ -121,7 +121,7 @@ export async function GET(req: NextRequest) {
 
     let query = supabase
       .from('shares')
-      .select(`*, packages(title), users(name, avatar_url)`)
+      .select(`*, packages(title), sharing_moments(title), users(name, avatar_url)`)
       .order('shared_at', { ascending: false })
       .limit(limit)
 

@@ -55,7 +55,8 @@ export interface DriveFile {
 export interface Share {
   id: string
   user_id: string
-  package_id: string
+  package_id: string | null
+  moment_id?: string | null
   platform: Platform
   copy_used: string | null
   utm_code: string | null

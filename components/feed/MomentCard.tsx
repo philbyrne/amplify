@@ -86,6 +86,8 @@ export default function MomentCard({ moment, index, onDismiss, onShared, autoOpe
     if (!window.confirm('Remove this moment from your feed? You can still find it under "Expired / Dismissed".')) return
     setDismissing(true)
     await fetch(`/api/moments/${moment.id}/dismiss`, { method: 'POST' })
+    // Tell the Chrome extension to refresh immediately
+    window.postMessage({ type: 'AMPLIFY_SHARED' }, '*')
     onDismiss(moment.id)
   }
 

@@ -1,7 +1,6 @@
 const APP_URL      = 'https://amplify-red.vercel.app'
 const POLL_ALARM   = 'pollMoments'
-const POLL_MINUTES = 5
-const NEW_MOMENT_GRACE_MS = 5 * 60 * 1000  // 5 minutes before notifying about new moments
+const POLL_MINUTES = 1  // Chrome alarm minimum — keeps badge & list fresh
 
 // ── Setup ──────────────────────────────────────────────────────────────────
 chrome.runtime.onInstalled.addListener(() => {
@@ -48,7 +47,7 @@ async function pollMoments() {
 
     if (res.status === 401) {
       await chrome.storage.sync.remove('authToken')
-      await chrome.storage.local.remove(['cachedMoments', 'seenMomentIds', 'pendingNewMoments'])
+      await chrome.storage.local.remove(['cachedMoments', 'seenMomentIds'])
       chrome.action.setBadgeText({ text: '' })
       return
     }
@@ -60,36 +59,14 @@ async function pollMoments() {
     const now = Date.now()
 
     // ── Track new moments ──────────────────────────────────────────────────
-    const { seenMomentIds = [], pendingNewMoments = {} } = await chrome.storage.local.get([
-      'seenMomentIds',
-      'pendingNewMoments',
-    ])
+    const { seenMomentIds = [] } = await chrome.storage.local.get('seenMomentIds')
 
     const currentIds = moments.map((m) => m.id)
     const brandNewIds = currentIds.filter((id) => !seenMomentIds.includes(id))
 
-    // Stamp newly-seen moments with the time we first noticed them
-    const updatedPending = { ...pendingNewMoments }
-    for (const id of brandNewIds) {
-      if (!updatedPending[id]) updatedPending[id] = now
-    }
-
-    // Check which pending moments have cleared the 5-minute grace period
-    let maturedNewMoments = []
-    const stillPending = {}
-    for (const [id, firstSeen] of Object.entries(updatedPending)) {
-      if (!currentIds.includes(id)) continue  // deleted/expired — drop it
-      if (now - firstSeen >= NEW_MOMENT_GRACE_MS) {
-        maturedNewMoments.push(id)             // ready to notify
-      } else {
-        stillPending[id] = firstSeen           // still waiting
-      }
-    }
-
     await chrome.storage.local.set({
       cachedMoments: moments,
       seenMomentIds: [...new Set([...seenMomentIds, ...currentIds])],
-      pendingNewMoments: stillPending,
       lastFetch: now,
     })
 
@@ -112,7 +89,7 @@ async function pollMoments() {
     }
 
     // ── In-page popup triggers ─────────────────────────────────────────────
-    const shouldShowForNewMoments = maturedNewMoments.length > 0
+    const shouldShowForNewMoments = brandNewIds.length > 0
     const shouldShowForMonday    = await checkMondayTrigger()
 
     if (shouldShowForNewMoments || shouldShowForMonday) {
@@ -217,8 +194,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       Promise.all([
         chrome.storage.sync.remove('authToken'),
         chrome.storage.local.remove([
-          'cachedMoments', 'seenMomentIds', 'lastFetch',
-          'pendingNewMoments', 'lastMondayPopupWeek',
+          'cachedMoments', 'seenMomentIds', 'lastFetch', 'lastMondayPopupWeek',
         ]),
       ]).then(() => {
         chrome.action.setBadgeText({ text: '' })

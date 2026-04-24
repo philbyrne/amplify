@@ -1,0 +1,144 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #0d1117;
+  --card:      #161b27;
+  --card-hover:#1c2333;
+  --border:    #21293d;
+  --primary:   #f97316;
+  --primary-dim:#7c3a0e;
+  --fg:        #f0f0f4;
+  --muted:     #6b7280;
+  --red:       #ef4444;
+  --amber:     #f59e0b;
+  --green:     #22c55e;
+  --radius:    12px;
+}
+
+html, body { width: 380px; background: var(--bg); color: var(--fg); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 13px; line-height: 1.4; }
+
+/* ── Auth screen ─────────────────────────────────────── */
+#auth-screen {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 320px; gap: 16px; padding: 32px 24px; text-align: center;
+}
+.auth-logo { font-size: 40px; line-height: 1; }
+.auth-title { font-size: 22px; font-weight: 300; letter-spacing: -0.5px; font-family: Georgia, serif; }
+.auth-subtitle { color: var(--muted); font-size: 12px; max-width: 260px; line-height: 1.6; }
+#connect-btn {
+  margin-top: 8px; background: var(--primary); color: #fff;
+  border: none; border-radius: var(--radius); padding: 11px 28px;
+  font-size: 13px; font-weight: 600; cursor: pointer; letter-spacing: 0.1px;
+  transition: opacity .15s;
+}
+#connect-btn:hover { opacity: .88; }
+
+/* ── Header ─────────────────────────────────────────── */
+header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 14px 10px; border-bottom: 1px solid var(--border);
+  background: var(--card);
+}
+.header-logo { display: flex; align-items: center; gap: 6px; flex: 1; }
+.header-logo-bolts { display: flex; gap: 1px; }
+.bolt-icon { color: var(--primary); font-size: 13px; }
+.header-brand { font-size: 14px; font-weight: 300; font-family: Georgia, serif; letter-spacing: 0.2px; }
+.header-actions { display: flex; align-items: center; gap: 4px; }
+.icon-btn {
+  background: none; border: none; cursor: pointer; padding: 5px;
+  color: var(--muted); border-radius: 6px; font-size: 14px; line-height: 1;
+  transition: color .12s, background .12s;
+}
+.icon-btn:hover { color: var(--fg); background: var(--border); }
+.icon-btn.spinning { animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Subheader ───────────────────────────────────────── */
+.subheader {
+  padding: 7px 14px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.subheader-count { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.subheader-updated { font-size: 10px; color: var(--muted); }
+
+/* ── Moments list ────────────────────────────────────── */
+#moments-list {
+  max-height: 520px; overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+}
+#moments-list::-webkit-scrollbar { width: 4px; }
+#moments-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 40px 24px; gap: 10px; color: var(--muted); text-align: center;
+}
+.empty-icon { font-size: 32px; opacity: .4; }
+.empty-title { font-size: 13px; font-weight: 500; color: var(--fg); }
+.empty-sub { font-size: 11px; line-height: 1.6; }
+
+/* ── Moment card ─────────────────────────────────────── */
+.moment-card {
+  padding: 12px 14px; border-bottom: 1px solid var(--border);
+  transition: background .1s;
+}
+.moment-card:hover { background: var(--card-hover); }
+.moment-card.priority-3 { border-left: 3px solid var(--primary); }
+.moment-card.priority-2 { border-left: 3px solid var(--amber); }
+.moment-card.priority-1 { border-left: 3px solid transparent; }
+
+.card-top { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 7px; }
+.card-bolts {
+  display: flex; align-items: center; position: relative;
+  width: 22px; height: 14px; flex-shrink: 0; margin-top: 3px;
+}
+.card-bolts .b { position: absolute; font-size: 11px; line-height: 1; color: var(--primary); }
+.card-title {
+  font-family: Georgia, serif; font-size: 14px; font-weight: 400;
+  line-height: 1.35; color: var(--fg); flex: 1;
+}
+.priority-3 .card-title { color: #fff; }
+
+.card-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px; }
+.card-meta-left { display: flex; flex-direction: column; gap: 4px; }
+
+/* Countdown */
+.countdown-row { display: flex; align-items: center; gap: 5px; }
+.countdown-label { font-size: 9px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.countdown { font-size: 11px; font-variant-numeric: tabular-nums; font-weight: 600; letter-spacing: .02em; }
+.countdown.urgent { color: var(--red); }
+.countdown.soon   { color: var(--amber); }
+.countdown.ok     { color: var(--muted); }
+.woo-badge {
+  font-size: 8px; font-weight: 800; letter-spacing: .08em;
+  background: var(--red); color: #fff;
+  padding: 1px 5px; border-radius: 4px; text-transform: uppercase;
+  animation: pulse-badge 1s ease-in-out infinite alternate;
+}
+@keyframes pulse-badge { from { opacity: 1; } to { opacity: .55; } }
+
+/* Shares */
+.shares-row { display: flex; align-items: center; gap: 4px; color: var(--muted); font-size: 11px; }
+.shares-icon { opacity: .6; }
+
+/* Share button */
+.share-btn {
+  background: var(--primary); color: #fff; border: none; border-radius: 8px;
+  padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer;
+  white-space: nowrap; transition: opacity .12s; flex-shrink: 0;
+}
+.share-btn:hover { opacity: .85; }
+
+/* ── Loading ─────────────────────────────────────────── */
+#loading-screen {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 200px;
+}
+.spinner {
+  width: 20px; height: 20px; border: 2px solid var(--border);
+  border-top-color: var(--primary); border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+
+/* ── Utility ─────────────────────────────────────────── */
+.hidden { display: none !important; }

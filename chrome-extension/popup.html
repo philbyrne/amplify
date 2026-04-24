@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Amplify</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+
+  <!-- Auth screen -->
+  <div id="auth-screen" class="hidden">
+    <div class="auth-logo">⚡</div>
+    <div class="auth-title">Amplify</div>
+    <p class="auth-subtitle">Share Intercom moments with your network. Get notified the second new opportunities go live.</p>
+    <button id="connect-btn">Connect with Amplify →</button>
+  </div>
+
+  <!-- Main screen -->
+  <div id="main-screen" class="hidden">
+    <header>
+      <div class="header-logo">
+        <div class="header-logo-bolts">
+          <span class="bolt-icon">⚡</span>
+        </div>
+        <span class="header-brand">Amplify</span>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="refresh-btn" title="Refresh">↻</button>
+        <button class="icon-btn" id="signout-btn" title="Sign out" style="font-size:11px;letter-spacing:.02em;">Sign out</button>
+      </div>
+    </header>
+
+    <div class="subheader">
+      <span class="subheader-count" id="active-count">Loading…</span>
+      <span class="subheader-updated" id="last-updated"></span>
+    </div>
+
+    <div id="moments-list"></div>
+  </div>
+
+  <!-- Loading screen -->
+  <div id="loading-screen">
+    <div class="spinner"></div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

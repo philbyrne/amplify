@@ -1,0 +1,132 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Custom fonts ── */
+@font-face {
+  font-family: 'Saans';
+  src: url('/fonts/Saans-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Ivory LL';
+  src: url('/fonts/IvoryLL-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Aeonik Fono';
+  src: url('/fonts/AeonikFono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  :root {
+    /* Dark theme (default) */
+    --background: 0 0% 11%;          /* #1b1b1b */
+    --foreground: 0 0% 97%;
+
+    --card: 225 20% 7%;              /* deep dark blue-grey */
+    --card-foreground: 0 0% 95%;
+
+    --popover: 225 20% 7%;
+    --popover-foreground: 0 0% 95%;
+
+    /* Fin orange #ff5600 */
+    --primary: 20 100% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 225 15% 12%;
+    --secondary-foreground: 225 10% 70%;
+
+    --muted: 225 15% 12%;
+    --muted-foreground: 225 8% 48%;
+
+    --accent: 225 20% 9%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 225 14% 16%;
+    --input: 225 15% 12%;
+    --ring: 20 100% 50%;
+
+    --radius: 0.625rem;
+
+    /* Sidebar */
+    --sidebar: 0 0% 0%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 20 100% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 225 15% 12%;
+    --sidebar-accent-foreground: 225 10% 70%;
+    --sidebar-border: 225 14% 13%;
+    --sidebar-ring: 20 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    font-family: 'Saans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  h1, h2 {
+    font-family: 'Ivory LL', Georgia, serif;
+    font-weight: 300;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+  }
+
+  h3, h4 {
+    font-family: 'Saans', system-ui, sans-serif;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  .font-mono-caps {
+    font-family: 'Aeonik Fono', ui-monospace, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+}
+
+/* ── Atmospheric bottom glow ── */
+body::before {
+  content: '';
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 40% at 50% 100%, hsl(20 100% 50% / 0.10) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 30% at 50% 110%, hsl(20 100% 50% / 0.06) 0%, transparent 60%);
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: hsl(225 14% 20%); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(225 14% 28%); }

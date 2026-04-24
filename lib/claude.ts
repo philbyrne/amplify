@@ -50,7 +50,7 @@ export async function generateCopy(params: CopyGenerationRequest): Promise<strin
     : '- Include the placeholder {{SHARE_URL}} naturally in the post where a link would fit'
 
   const ctaTextContext = cta
-    ? `\n\nCTA intent (paraphrase this, do NOT use verbatim): "${cta}"`
+    ? `\n\nCTA intent (paraphrase naturally, do NOT use verbatim): "${cta}" — IMPORTANT: frame this as customer-facing language directed at the employee's audience (prospects/customers), not as an instruction to teammates to share something. The post speaks TO the audience, not ABOUT sharing.`
     : ''
 
   const diffContext =

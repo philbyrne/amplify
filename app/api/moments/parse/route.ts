@@ -143,7 +143,7 @@ Extract the key information and return a JSON object with exactly these fields:
 - "background": string — 2-3 sentences of context/background about this announcement
 - "key_messages": string[] — 3-5 key messages employees should understand and communicate
 - "talking_points": string[] — 3-5 specific, concrete talking points they can use in social posts
-- "call_to_action": string — ONE sentence (max 20 words) telling employees what to share/say. Be direct and specific. No compound sentences, no "and also…" additions.
+- "call_to_action": string — ONE sentence (max 20 words) written in CUSTOMER-FACING language — as if speaking directly to a prospect or customer, not to the employee sharing it. This copy will be used to generate the social post itself, so it must read like something a customer would find compelling, not an internal instruction like "share this with your network". For example: "If you want a calendar full of leads, visit fin.ai/sales" — NOT "Share fin.ai/sales with your audience if this resonates". No compound sentences, no "and also…" additions.
 - "cta_url": string | null — the specific URL employees should share in their posts (the destination link, blog post, landing page, etc). Extract the exact URL if present, otherwise null.
 
 Document content:

@@ -148,7 +148,16 @@ export default function MomentForm({ moment }: Props) {
   }
 
   const inputCls = 'w-full px-3 py-2 text-sm bg-secondary border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-ring'
-  const textareaCls = `${inputCls} resize-none`
+  const textareaCls = `${inputCls} resize-none overflow-hidden`
+
+  function autoResize(e: React.FormEvent<HTMLTextAreaElement>) {
+    const el = e.currentTarget
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }
+
+  const ctaWordCount = (parsed?.call_to_action || '').trim().split(/\s+/).filter(Boolean).length
+  const ctaOverLimit = ctaWordCount > 20
 
   return (
     <div className="grid grid-cols-[1fr_300px] gap-6 items-start max-w-5xl">
@@ -258,21 +267,25 @@ export default function MomentForm({ moment }: Props) {
                 onChange={(e) => setParsed((p) => p ? { ...p, title: e.target.value } : p)} />
             </div>
 
-            {/* Summary */}
-            <div className="space-y-1">
-              <label className="text-xs font-mono-caps text-muted-foreground uppercase tracking-wide">
-                Summary <span className="normal-case">(shown on card)</span>
-              </label>
-              <textarea value={parsed.summary} rows={2} className={textareaCls}
-                onChange={(e) => setParsed((p) => p ? { ...p, summary: e.target.value } : p)} />
-            </div>
-
-            {/* CTA */}
+            {/* CTA — before Summary */}
             <div className="space-y-2 bg-primary/5 border border-primary/20 rounded-xl p-4">
-              <label className="text-xs font-mono-caps text-primary uppercase tracking-wide font-semibold">Call to Action</label>
-              <textarea value={parsed.call_to_action} rows={2} className={textareaCls}
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-mono-caps text-primary uppercase tracking-wide font-semibold">Call to Action</label>
+                <span className={`text-[10px] font-mono tabular-nums ${ctaOverLimit ? 'text-red-400 font-semibold' : 'text-muted-foreground'}`}>
+                  {ctaWordCount}/20 words
+                </span>
+              </div>
+              <textarea
+                value={parsed.call_to_action}
+                rows={1}
+                className={`${textareaCls} ${ctaOverLimit ? 'border-red-500/50 focus:ring-red-500/50' : ''}`}
+                placeholder="One sentence telling employees what to share."
+                onInput={autoResize}
                 onChange={(e) => setParsed((p) => p ? { ...p, call_to_action: e.target.value } : p)}
-                placeholder="What should employees do / say?" />
+              />
+              {ctaOverLimit && (
+                <p className="text-[11px] text-red-400">Keep it to one sentence, max 20 words.</p>
+              )}
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
                   <label className="text-xs text-muted-foreground">CTA URL <span className="italic">(the link employees will share)</span></label>
@@ -290,10 +303,21 @@ export default function MomentForm({ moment }: Props) {
               </div>
             </div>
 
+            {/* Summary */}
+            <div className="space-y-1">
+              <label className="text-xs font-mono-caps text-muted-foreground uppercase tracking-wide">
+                Summary <span className="normal-case">(shown on card)</span>
+              </label>
+              <textarea value={parsed.summary} rows={1} className={textareaCls}
+                onInput={autoResize}
+                onChange={(e) => setParsed((p) => p ? { ...p, summary: e.target.value } : p)} />
+            </div>
+
             {/* Background */}
             <div className="space-y-1">
               <label className="text-xs font-mono-caps text-muted-foreground uppercase tracking-wide">Background</label>
-              <textarea value={parsed.background} rows={3} className={textareaCls}
+              <textarea value={parsed.background} rows={1} className={textareaCls}
+                onInput={autoResize}
                 onChange={(e) => setParsed((p) => p ? { ...p, background: e.target.value } : p)} />
             </div>
 

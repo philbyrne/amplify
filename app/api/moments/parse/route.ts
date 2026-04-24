@@ -143,7 +143,7 @@ Extract the key information and return a JSON object with exactly these fields:
 - "background": string — 2-3 sentences of context/background about this announcement
 - "key_messages": string[] — 3-5 key messages employees should understand and communicate
 - "talking_points": string[] — 3-5 specific, concrete talking points they can use in social posts
-- "call_to_action": string — the CTA text/instruction for employees (what to say/do)
+- "call_to_action": string — ONE sentence (max 20 words) telling employees what to share/say. Be direct and specific. No compound sentences, no "and also…" additions.
 - "cta_url": string | null — the specific URL employees should share in their posts (the destination link, blog post, landing page, etc). Extract the exact URL if present, otherwise null.
 
 Document content:

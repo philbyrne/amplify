@@ -41,12 +41,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [adminPulse, setAdminPulse] = useState(false)
   const [momentCount, setMomentCount] = useState(0)
 
-  useEffect(() => {
-    // Auto-request notification permission on first visit (default-on)
-    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission()
-    }
-
+  function fetchMomentCount() {
     fetch('/api/moments')
       .then((r) => r.json())
       .then((data: Record<string, unknown>[]) => {
@@ -55,6 +50,25 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         checkAndNotify(moments)
       })
       .catch(() => {})
+  }
+
+  useEffect(() => {
+    // Auto-request notification permission on first visit (default-on)
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission()
+    }
+    fetchMomentCount()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname])
+
+  // Re-fetch badge count whenever a moment is shared or dismissed in the feed
+  useEffect(() => {
+    function handleMessage(e: MessageEvent) {
+      if (e.data?.type === 'AMPLIFY_SHARED') fetchMomentCount()
+    }
+    window.addEventListener('message', handleMessage)
+    return () => window.removeEventListener('message', handleMessage)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function checkAndNotify(moments: Record<string, unknown>[]) {

@@ -55,7 +55,11 @@ export async function GET(req: NextRequest) {
   if (sharesResult.error) console.error('[extension/moments] shares query error:', sharesResult.error)
   if (dismissedResult.error) console.error('[extension/moments] dismissed query error:', dismissedResult.error)
 
-  console.log('[extension/moments] user:', user.id, 'dismissed rows:', dismissedResult.data?.length, 'share rows:', sharesResult.data?.length)
+  console.log('[extension/moments] user:', user.id,
+    'active ids:', ids,
+    'dismissed ids:', (dismissedResult.data || []).map(d => d.moment_id),
+    'share moment ids:', (sharesResult.data || []).map(s => s.moment_id),
+  )
 
   const excludedIds = new Set([
     ...(sharesResult.data || []).map((s) => s.moment_id),

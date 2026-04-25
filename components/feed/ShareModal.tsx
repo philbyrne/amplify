@@ -213,6 +213,8 @@ export default function ShareModal({ pkg, open, onClose, momentId, mediaAssets, 
         window.open(shareHref, '_blank', 'width=620,height=600,noopener,noreferrer')
         setShared(true)
         onShared?.()
+        // Tell the Chrome extension to refresh its badge immediately
+        window.postMessage({ type: 'AMPLIFY_SHARED' }, '*')
         if (confettiFn) confettiFn({ particleCount: 120, spread: 70, origin: { y: 0.6 }, colors: ['#6366f1', '#8b5cf6', '#a78bfa', '#ffffff', '#c7d2fe'] })
         setTimeout(() => { setShared(false); onClose() }, 2800)
       }, 500)

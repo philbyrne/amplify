@@ -22,6 +22,17 @@ function getMediaType(url: string): MediaAsset['type'] | null {
   return null
 }
 
+// If the URL alone returns a coarse type (e.g. 'drive'), check the link caption
+// text for a more specific classification.
+function refineTypeFromCaption(caption: string, urlType: MediaAsset['type']): MediaAsset['type'] {
+  const c = caption.toLowerCase()
+  if (/animation|motion graphic|animated/.test(c)) return 'animation'
+  if (/video|demo video|demo|reel|recording|walkthrough|loom/.test(c)) return 'video'
+  if (/image|photo|screenshot|graphic|banner|thumbnail/.test(c)) return 'image'
+  // 'link' caption keywords stay as-is or keep url type
+  return urlType
+}
+
 function extractMediaLinks(html: string): MediaAsset[] {
   const assets: MediaAsset[] = []
   const seen = new Set<string>()
@@ -40,9 +51,13 @@ function extractMediaLinks(html: string): MediaAsset[] {
     }
     if (seen.has(href)) continue
     seen.add(href)
-    const type = getMediaType(href)
-    if (!type) continue
     const caption = match[2].replace(/<[^>]+>/g, '').trim()
+    const urlType = getMediaType(href)
+    // If the URL isn't a recognised media URL, check whether the caption name
+    // clearly identifies a type (e.g. a link labelled "VIDEO" or "PRODUCT ANIMATION")
+    const captionOnlyType = !urlType && caption ? refineTypeFromCaption(caption, 'link') : null
+    const type = urlType ? refineTypeFromCaption(caption, urlType) : captionOnlyType
+    if (!type) continue
     assets.push({ url: href, type, ...(caption ? { caption } : {}) })
   }
 

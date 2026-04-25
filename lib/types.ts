@@ -82,7 +82,7 @@ export interface CopyGenerationRequest {
 
 export interface MediaAsset {
   url: string
-  type: 'image' | 'video' | 'drive' | 'link'
+  type: 'image' | 'video' | 'animation' | 'drive' | 'link'
   caption?: string
 }
 

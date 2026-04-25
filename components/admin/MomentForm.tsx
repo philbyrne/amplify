@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import {
   FileText, Sparkles, Loader2, CheckCircle, AlertCircle,
   Linkedin, Twitter, HardDrive, X, Plus, Film, Image as ImageIcon,
-  Link2, ExternalLink, Zap,
+  Link2, ExternalLink, Zap, Clapperboard,
 } from 'lucide-react'
 import type { ParsedMomentContent, SharingMoment, MediaAsset } from '@/lib/types'
 
@@ -18,10 +18,11 @@ interface AssetGroup {
 }
 
 const ASSET_GROUPS: AssetGroup[] = [
-  { type: 'image', label: 'Images', Icon: ImageIcon },
-  { type: 'video', label: 'Videos', Icon: Film },
-  { type: 'link',  label: 'Links',  Icon: Link2 },
-  { type: 'drive', label: 'Files',  Icon: HardDrive },
+  { type: 'image',     label: 'Images',     Icon: ImageIcon },
+  { type: 'video',     label: 'Videos',     Icon: Film },
+  { type: 'animation', label: 'Animations', Icon: Clapperboard },
+  { type: 'link',      label: 'Links',      Icon: Link2 },
+  { type: 'drive',     label: 'Files',      Icon: HardDrive },
 ]
 
 interface Props {

@@ -5,33 +5,23 @@
 const POPUP_ID = 'amplify-woo-popup'
 const APP_URL  = 'https://amplify-red.vercel.app'
 
+// Each entry: { text, btn }
+// {X} = count, {s} = "" or "s" for plural noun (sharable/sharables)
 const COPY_LINES = [
-  "That jacuzzi won't save for itself — you have {X} amplification {opp}!",
-  "Your LinkedIn is collecting dust. {X} sharing {opp} are waiting for your voice.",
-  "The internet misses you. {X} moments are live and ready to amplify.",
-  "Plot twist: you're the marketing team now. {X} {opp} await.",
-  "Your future self called. They said share something. {X} {opp} ready.",
-  "Silence is expensive. You have {X} amplification {opp} right now.",
-  "Quick win alert 🚨 — {X} sharing {opp}, zero caffeine required.",
-  "Your personal brand just sent a calendar invite. {X} {opp} are live.",
-  "Don't leave {X} {opp} on the table. Your network is waiting.",
-  "Your competitors aren't posting. You should be. {X} {opp} live.",
-  "{X} sharing {opp}. One click. Big impact. You know the drill.",
-  "The megaphone is yours — {X} {opp} and counting.",
-  "Amplify o'clock 🕐 {X} sharing {opp} ready to go.",
-  "Your LinkedIn algorithm is hungry. Feed it. {X} {opp} available.",
-  "Good news: {X} sharing {opp}. Better news: they take 60 seconds.",
-  "Small effort, big reach — {X} {opp} live right now.",
-  "Your colleagues are sharing. Are you? {X} {opp} to catch up.",
-  "Think of it as your morning stretch — {X} {opp} to warm up with.",
-  "The sharing window is open. {X} {opp} inside, no reservation required.",
-  "Reminder: you're kind of a big deal. {X} {opp} to prove it.",
+  { text: "Time to feed that network! {X} {sharable} ready to go.",  btn: "NOM!" },
+  { text: "{X} {sharable} to pounce on!",                            btn: "Pounce!" },
+  { text: "That gold jacuzzi isn't going to buy itself!",            btn: "Let's bubble up!" },
+  { text: "Pump up the shares!",                                     btn: "Pump it up!" },
+  { text: "{X} new {sharable}! Sharing is...",                       btn: "Caring?" },
+  { text: "Aww, push it!",                                           btn: "Push it real good!" },
+  { text: "{X} new {sharable} to amplify!",                         btn: "LFG!" },
 ]
 
 function buildCopy(count) {
   const line = COPY_LINES[Math.floor(Math.random() * COPY_LINES.length)]
-  const opp = count === 1 ? 'opportunity' : 'opportunities'
-  return line.replace(/\{X\}/g, count).replace(/\{opp\}/g, opp)
+  const sharable = count === 1 ? 'sharable' : 'sharables'
+  const text = line.text.replace(/\{X\}/g, count).replace(/\{sharable\}/g, sharable)
+  return { text, btn: line.btn }
 }
 
 function injectStyles() {
@@ -138,6 +128,8 @@ function showPopup(count) {
 
   injectStyles()
 
+  const { text, btn } = buildCopy(count)
+
   const popup = document.createElement('div')
   popup.id = POPUP_ID
   popup.innerHTML = `
@@ -146,9 +138,9 @@ function showPopup(count) {
         <div class="amp-logo"><span class="amp-logo-bolt">⚡</span> Amplify</div>
         <button class="amp-dismiss" aria-label="Dismiss">✕</button>
       </div>
-      <p class="amp-copy">${buildCopy(count)}</p>
+      <p class="amp-copy">${text}</p>
       <a class="amp-cta" href="${APP_URL}/feed" target="_blank" rel="noopener">
-        View ${count === 1 ? 'opportunity' : 'opportunities'} →
+        ${btn}
       </a>
     </div>
   `
@@ -180,5 +172,12 @@ function dismiss(popup) {
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg.type === 'SHOW_AMPLIFY_POPUP' && typeof msg.count === 'number' && msg.count > 0) {
     showPopup(msg.count)
+  }
+})
+
+// Listen for share events from the web app and immediately refresh the badge
+window.addEventListener('message', (event) => {
+  if (event.data?.type === 'AMPLIFY_SHARED') {
+    chrome.runtime.sendMessage({ type: 'POLL_NOW' })
   }
 })

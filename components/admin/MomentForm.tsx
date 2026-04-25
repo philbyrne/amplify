@@ -415,7 +415,7 @@ export default function MomentForm({ moment }: Props) {
 
             <div className="flex items-center justify-between pt-2">
               <p className="text-xs text-muted-foreground">
-                {editing ? 'Changes go live immediately' : <>Expires in <span className="font-medium text-foreground">14 days</span></>}
+                {editing ? 'Changes go live immediately' : <>Expires in <span className="font-medium text-foreground">7 days</span></>}
               </p>
               <button
                 onClick={handleSave}

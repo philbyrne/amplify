@@ -202,7 +202,7 @@ export async function POST(req: NextRequest) {
         doc_url: doc_url || null,
         platform_targets: platform_targets || ['linkedin', 'x'],
         created_by: user.id,
-        expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       })
       .select()
       .single()

@@ -94,6 +94,9 @@ export default function MomentForm({ moment }: Props) {
     setPlatforms((prev) => prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p])
   }
 
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
+  const [dropTargetType, setDropTargetType] = useState<MediaAsset['type'] | null>(null)
+
   function removeAsset(idx: number) {
     setParsed((p) => p ? { ...p, media_assets: p.media_assets?.filter((_, i) => i !== idx) } : p)
   }
@@ -107,10 +110,25 @@ export default function MomentForm({ moment }: Props) {
     })
   }
 
+  function changeAssetCaption(idx: number, caption: string) {
+    setParsed((p) => {
+      if (!p?.media_assets) return p
+      const assets = [...p.media_assets]
+      assets[idx] = { ...assets[idx], caption: caption || undefined }
+      return { ...p, media_assets: assets }
+    })
+  }
+
+  function handleDrop(targetType: MediaAsset['type']) {
+    if (draggedIdx !== null) changeAssetType(draggedIdx, targetType)
+    setDraggedIdx(null)
+    setDropTargetType(null)
+  }
+
   function addAsset(type: MediaAsset['type']) {
     const url = prompt('Paste URL:')
     if (!url?.trim()) return
-    const caption = prompt('Caption (optional, press Enter to skip):') || undefined
+    const caption = prompt('Label (optional, press Enter to skip):') || undefined
     setParsed((p) => p ? {
       ...p,
       media_assets: [...(p.media_assets || []), { url: url.trim(), type, ...(caption ? { caption } : {}) }],
@@ -445,8 +463,18 @@ export default function MomentForm({ moment }: Props) {
             ASSET_GROUPS.map(({ type, label, Icon }) => {
               const assets = (parsed.media_assets || []).filter((a) => a.type === type)
               const allAssets = parsed.media_assets || []
+              const isDropTarget = draggedIdx !== null && dropTargetType === type && allAssets[draggedIdx]?.type !== type
               return (
-                <div key={type} className="space-y-2">
+                <div
+                  key={type}
+                  className="space-y-2"
+                  onDragOver={(e) => { e.preventDefault(); setDropTargetType(type) }}
+                  onDragLeave={(e) => {
+                    // only clear if leaving the section entirely (not into a child)
+                    if (!e.currentTarget.contains(e.relatedTarget as Node)) setDropTargetType(null)
+                  }}
+                  onDrop={(e) => { e.preventDefault(); handleDrop(type) }}
+                >
                   {/* Group header */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
@@ -464,62 +492,77 @@ export default function MomentForm({ moment }: Props) {
                     </button>
                   </div>
 
-                  {/* Asset list */}
-                  {assets.length > 0 ? (
-                    <div className="space-y-1.5">
-                      {assets.map((asset) => {
-                        const idx = allAssets.indexOf(asset)
-                        return (
-                          <div key={idx} className="bg-secondary rounded-lg p-2.5 border border-border group space-y-1.5">
-                            <div className="flex items-start gap-2">
-                              <a
-                                href={asset.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex-1 min-w-0 hover:text-primary transition-colors"
-                              >
-                                <p className="text-xs text-foreground truncate">{asset.caption || asset.url}</p>
-                                {asset.caption && (
+                  {/* Drop zone + asset list */}
+                  <div className={`rounded-lg transition-colors min-h-[2rem] ${isDropTarget ? 'bg-primary/5 ring-1 ring-dashed ring-primary/40' : ''}`}>
+                    {assets.length > 0 ? (
+                      <div className="space-y-1.5">
+                        {assets.map((asset) => {
+                          const idx = allAssets.indexOf(asset)
+                          const isDragging = draggedIdx === idx
+                          return (
+                            <div
+                              key={idx}
+                              draggable
+                              onDragStart={() => setDraggedIdx(idx)}
+                              onDragEnd={() => { setDraggedIdx(null); setDropTargetType(null) }}
+                              className={`bg-secondary rounded-lg p-2.5 border border-border space-y-1.5 cursor-grab active:cursor-grabbing select-none transition-opacity ${isDragging ? 'opacity-40' : 'opacity-100'}`}
+                            >
+                              <div className="flex items-start gap-2">
+                                <div className="flex-1 min-w-0 space-y-0.5">
+                                  {/* Editable label */}
+                                  <input
+                                    type="text"
+                                    value={asset.caption || ''}
+                                    placeholder="Add a label…"
+                                    onChange={(e) => changeAssetCaption(idx, e.target.value)}
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                    className="w-full text-xs bg-transparent text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:placeholder:text-transparent"
+                                  />
                                   <p className="text-[10px] text-muted-foreground truncate">{asset.url}</p>
-                                )}
-                              </a>
-                              <div className="flex items-center gap-1 shrink-0">
-                                <a href={asset.url} target="_blank" rel="noopener noreferrer"
-                                  className="text-muted-foreground hover:text-foreground transition-colors">
-                                  <ExternalLink className="h-3 w-3" />
-                                </a>
-                                <button
-                                  onClick={() => removeAsset(idx)}
-                                  className="text-muted-foreground hover:text-destructive transition-colors"
-                                >
-                                  <X className="h-3 w-3" />
-                                </button>
+                                </div>
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <a href={asset.url} target="_blank" rel="noopener noreferrer"
+                                    className="text-muted-foreground hover:text-foreground transition-colors"
+                                    onMouseDown={(e) => e.stopPropagation()}>
+                                    <ExternalLink className="h-3 w-3" />
+                                  </a>
+                                  <button
+                                    onClick={() => removeAsset(idx)}
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                    className="text-muted-foreground hover:text-destructive transition-colors"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </div>
+                              </div>
+                              {/* Type switcher — icon-only */}
+                              <div className="flex items-center gap-0.5">
+                                {ASSET_GROUPS.map(({ type: t, label: tLabel, Icon: TIcon }) => (
+                                  <button
+                                    key={t}
+                                    title={tLabel}
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                    onClick={() => changeAssetType(idx, t)}
+                                    className={`flex items-center justify-center w-7 h-6 rounded transition-colors ${
+                                      asset.type === t
+                                        ? 'bg-primary/20 text-primary border border-primary/30'
+                                        : 'text-muted-foreground hover:text-foreground border border-transparent hover:border-border'
+                                    }`}
+                                  >
+                                    <TIcon className="h-3 w-3" />
+                                  </button>
+                                ))}
                               </div>
                             </div>
-                            {/* Type switcher — icon-only to stay within card width */}
-                            <div className="flex items-center gap-0.5">
-                              {ASSET_GROUPS.map(({ type: t, label: tLabel, Icon: TIcon }) => (
-                                <button
-                                  key={t}
-                                  title={tLabel}
-                                  onClick={() => changeAssetType(idx, t)}
-                                  className={`flex items-center justify-center w-7 h-6 rounded transition-colors ${
-                                    asset.type === t
-                                      ? 'bg-primary/20 text-primary border border-primary/30'
-                                      : 'text-muted-foreground hover:text-foreground border border-transparent hover:border-border'
-                                  }`}
-                                >
-                                  <TIcon className="h-3 w-3" />
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  ) : (
-                    <p className="text-[11px] text-muted-foreground/60 italic pl-0.5">None yet</p>
-                  )}
+                          )
+                        })}
+                      </div>
+                    ) : (
+                      <p className={`text-[11px] italic pl-0.5 py-1 transition-colors ${isDropTarget ? 'text-primary/60' : 'text-muted-foreground/60'}`}>
+                        {isDropTarget ? `Drop here to move to ${label}` : 'None yet'}
+                      </p>
+                    )}
+                  </div>
                 </div>
               )
             })

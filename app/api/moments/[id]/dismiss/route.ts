@@ -38,7 +38,7 @@ export async function POST(
       return NextResponse.json({ error: upsertError.message }, { status: 500 })
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, _debugUserId: user.id })
   } catch (err) {
     console.error('POST /api/moments/[id]/dismiss error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

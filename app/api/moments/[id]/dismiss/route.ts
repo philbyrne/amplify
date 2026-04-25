@@ -24,9 +24,17 @@ export async function POST(
 
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
-    await supabase
+    const { error: upsertError } = await supabase
       .from('dismissed_moments')
-      .upsert({ user_id: user.id, moment_id: params.id })
+      .upsert(
+        { user_id: user.id, moment_id: params.id },
+        { onConflict: 'user_id,moment_id', ignoreDuplicates: true }
+      )
+
+    if (upsertError) {
+      console.error('Dismiss upsert error:', upsertError)
+      return NextResponse.json({ error: upsertError.message }, { status: 500 })
+    }
 
     return NextResponse.json({ success: true })
   } catch (err) {

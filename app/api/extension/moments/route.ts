@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
   if (ids.length === 0) return NextResponse.json([])
 
   // Find which of these moments this user has already shared or dismissed
-  const [{ data: userShares }, { data: userDismissed }] = await Promise.all([
+  const [sharesResult, dismissedResult] = await Promise.all([
     supabase
       .from('shares')
       .select('moment_id')
@@ -51,6 +51,12 @@ export async function GET(req: NextRequest) {
       .eq('user_id', user.id)
       .in('moment_id', ids),
   ])
+
+  if (sharesResult.error) console.error('[extension/moments] shares query error:', sharesResult.error)
+  if (dismissedResult.error) console.error('[extension/moments] dismissed query error:', dismissedResult.error)
+
+  const userShares = sharesResult.data
+  const userDismissed = dismissedResult.data
 
   const excludedIds = new Set([
     ...(userShares || []).map((s) => s.moment_id),

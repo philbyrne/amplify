@@ -35,8 +35,6 @@ export async function GET(req: NextRequest) {
     ...(userShares || []).map((s) => s.moment_id as string).filter(Boolean),
   ]))
 
-  console.log('[extension/moments] user:', user.id, 'excluded ids:', excludedIds)
-
   // Fetch active non-expired moments, excluding dismissed/shared — identical to web app active view
   let query = supabase
     .from('sharing_moments')
@@ -51,8 +49,6 @@ export async function GET(req: NextRequest) {
 
   const { data: moments, error } = await query
   if (error) return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-
-  console.log('[extension/moments] returning', moments?.length ?? 0, 'moments')
 
   if (!moments || moments.length === 0) return NextResponse.json([])
 

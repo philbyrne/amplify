@@ -24,8 +24,6 @@ export async function POST(
 
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
-    console.log('[dismiss] session email:', session.user.email, 'resolved user_id:', user.id, 'moment_id:', params.id)
-
     const { error: upsertError } = await supabase
       .from('dismissed_moments')
       .upsert({ user_id: user.id, moment_id: params.id }, { onConflict: 'user_id,moment_id' })
@@ -35,16 +33,7 @@ export async function POST(
       return NextResponse.json({ error: upsertError.message }, { status: 500 })
     }
 
-    // Read it straight back to confirm the row actually landed
-    const { data: verify, error: verifyError } = await supabase
-      .from('dismissed_moments')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('moment_id', params.id)
-      .single()
-
-    console.log('[dismiss] verify:', verify, verifyError)
-    return NextResponse.json({ success: true, _debugUserId: user.id, _rowWritten: !!verify })
+    return NextResponse.json({ success: true })
   } catch (err) {
     console.error('POST /api/moments/[id]/dismiss error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

@@ -496,21 +496,20 @@ export default function MomentForm({ moment }: Props) {
                                 </button>
                               </div>
                             </div>
-                            {/* Type switcher */}
-                            <div className="flex items-center gap-1">
-                              {ASSET_GROUPS.map(({ type: t, Icon: TIcon }) => (
+                            {/* Type switcher — icon-only to stay within card width */}
+                            <div className="flex items-center gap-0.5">
+                              {ASSET_GROUPS.map(({ type: t, label: tLabel, Icon: TIcon }) => (
                                 <button
                                   key={t}
-                                  title={`Mark as ${t}`}
+                                  title={tLabel}
                                   onClick={() => changeAssetType(idx, t)}
-                                  className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors ${
+                                  className={`flex items-center justify-center w-7 h-6 rounded transition-colors ${
                                     asset.type === t
                                       ? 'bg-primary/20 text-primary border border-primary/30'
                                       : 'text-muted-foreground hover:text-foreground border border-transparent hover:border-border'
                                   }`}
                                 >
-                                  <TIcon className="h-2.5 w-2.5" />
-                                  {t}
+                                  <TIcon className="h-3 w-3" />
                                 </button>
                               ))}
                             </div>

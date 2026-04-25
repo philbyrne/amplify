@@ -5,6 +5,7 @@ const POLL_MINUTES = 1  // Chrome alarm minimum — keeps badge & list fresh
 // ── Setup ──────────────────────────────────────────────────────────────────
 chrome.runtime.onInstalled.addListener(() => {
   chrome.alarms.create(POLL_ALARM, { periodInMinutes: POLL_MINUTES })
+  pollMoments()
 })
 
 chrome.runtime.onStartup.addListener(() => {

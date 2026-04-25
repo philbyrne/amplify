@@ -6,7 +6,7 @@ let countdownTimers = []
 document.addEventListener('DOMContentLoaded', async () => {
   showScreen('loading')
 
-  // Get state from background
+  // Get cached state from background
   const state = await msg('GET_STATE')
 
   if (!state.authed) {
@@ -14,24 +14,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     return
   }
 
-  // Show stale data immediately while we may refresh
+  // Show cached data immediately so the popup feels instant
   if (state.moments.length > 0) {
     moments = state.moments
     renderMoments()
     showScreen('main')
   }
 
-  // If data is stale (>= 5 min), trigger a fresh poll
-  const staleMins = state.lastFetch ? (Date.now() - state.lastFetch) / 60000 : Infinity
-  if (staleMins >= 5 || state.moments.length === 0) {
-    setRefreshSpinning(true)
-    await msg('POLL_NOW')
-    const fresh = await msg('GET_STATE')
-    moments = fresh.moments || []
-    renderMoments()
-    setRefreshSpinning(false)
-  }
-
+  // Always fetch fresh data every time the popup opens — ensures dismissed
+  // and shared moments are never shown stale regardless of when last polled
+  setRefreshSpinning(true)
+  await msg('POLL_NOW')
+  const fresh = await msg('GET_STATE')
+  moments = fresh.moments || []
+  renderMoments()
+  setRefreshSpinning(false)
   showScreen('main')
 })
 

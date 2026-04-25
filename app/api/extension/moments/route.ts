@@ -24,47 +24,39 @@ export async function GET(req: NextRequest) {
 
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
-  // Fetch active, non-expired moments
-  const { data: moments, error } = await supabase
+  // Get all dismissed + shared moment IDs for this user (same approach as /api/moments)
+  const [{ data: dismissed }, { data: userShares }] = await Promise.all([
+    supabase.from('dismissed_moments').select('moment_id').eq('user_id', user.id),
+    supabase.from('shares').select('moment_id').eq('user_id', user.id).not('moment_id', 'is', null),
+  ])
+
+  const excludedIds = Array.from(new Set([
+    ...(dismissed || []).map((d) => d.moment_id as string).filter(Boolean),
+    ...(userShares || []).map((s) => s.moment_id as string).filter(Boolean),
+  ]))
+
+  console.log('[extension/moments] user:', user.id, 'excluded ids:', excludedIds)
+
+  // Fetch active non-expired moments, excluding dismissed/shared — identical to web app active view
+  let query = supabase
     .from('sharing_moments')
     .select('*')
     .eq('is_active', true)
     .gt('expires_at', new Date().toISOString())
     .order('created_at', { ascending: false })
 
+  if (excludedIds.length > 0) {
+    query = query.not('id', 'in', `(${excludedIds.join(',')})`)
+  }
+
+  const { data: moments, error } = await query
   if (error) return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
 
-  const ids = (moments || []).map((m) => m.id)
-  if (ids.length === 0) return NextResponse.json([])
+  console.log('[extension/moments] returning', moments?.length ?? 0, 'moments')
 
-  // Find which moments this user has already shared or dismissed
-  // Note: no .in() filter — fetch all for this user then intersect in JS,
-  // matching the same approach used by /api/moments to avoid subtle mismatches
-  const [sharesResult, dismissedResult] = await Promise.all([
-    supabase
-      .from('shares')
-      .select('moment_id')
-      .eq('user_id', user.id)
-      .not('moment_id', 'is', null),
-    supabase
-      .from('dismissed_moments')
-      .select('moment_id')
-      .eq('user_id', user.id),
-  ])
+  if (!moments || moments.length === 0) return NextResponse.json([])
 
-  if (sharesResult.error) console.error('[extension/moments] shares query error:', sharesResult.error)
-  if (dismissedResult.error) console.error('[extension/moments] dismissed query error:', dismissedResult.error)
-
-  console.log('[extension/moments] user:', user.id,
-    'active ids:', ids,
-    'dismissed ids:', (dismissedResult.data || []).map(d => d.moment_id),
-    'share moment ids:', (sharesResult.data || []).map(s => s.moment_id),
-  )
-
-  const excludedIds = new Set([
-    ...(sharesResult.data || []).map((s) => s.moment_id),
-    ...(dismissedResult.data || []).map((d) => d.moment_id),
-  ])
+  const ids = moments.map((m) => m.id)
 
   // Attach total share counts + sharer avatars
   const { data: allShares } = await supabase
@@ -91,14 +83,11 @@ export async function GET(req: NextRequest) {
     for (const u of sharerUsers || []) sharerUserMap[u.id] = { name: u.name, avatar_url: u.avatar_url }
   }
 
-  // Exclude moments the user has already shared or dismissed
-  const result = (moments || [])
-    .filter((m) => !excludedIds.has(m.id))
-    .map((m) => ({
-      ...m,
-      share_count: shareCountMap[m.id] || 0,
-      sharers: (sharersMap[m.id] || []).map((uid) => sharerUserMap[uid]).filter(Boolean),
-    }))
+  const result = moments.map((m) => ({
+    ...m,
+    share_count: shareCountMap[m.id] || 0,
+    sharers: (sharersMap[m.id] || []).map((uid) => sharerUserMap[uid]).filter(Boolean),
+  }))
 
   return NextResponse.json(result)
 }

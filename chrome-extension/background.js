@@ -42,7 +42,7 @@ async function pollMoments() {
   if (!authToken) return
 
   try {
-    const res = await fetch(`${APP_URL}/api/extension/moments`, {
+    const res = await fetch(`${APP_URL}/api/moments?view=active`, {
       headers: { Authorization: `Bearer ${authToken}` },
     })
 

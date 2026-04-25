@@ -4,11 +4,22 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getAdminClient } from '@/lib/supabase/admin'
+import { verifyExtensionToken } from '@/lib/extension-token'
 
 export async function GET(req: NextRequest) {
   try {
+    // Support both NextAuth session (web app) and Bearer token (Chrome extension)
+    let userEmail: string | null = null
     const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
+    if (session?.user?.email) {
+      userEmail = session.user.email
+    } else {
+      const auth = req.headers.get('authorization') || ''
+      const token = auth.startsWith('Bearer ') ? auth.slice(7) : null
+      if (token) userEmail = verifyExtensionToken(token)
+    }
+
+    if (!userEmail) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -18,7 +29,7 @@ export async function GET(req: NextRequest) {
     const { data: user } = await supabase
       .from('users')
       .select('id')
-      .eq('email', session.user.email)
+      .eq('email', userEmail)
       .single()
 
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })

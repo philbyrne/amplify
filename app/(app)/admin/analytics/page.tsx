@@ -18,9 +18,16 @@ import {
   Cell,
   Legend,
 } from 'recharts'
-import { BarChart3, Share2, Users, TrendingUp, Linkedin, Twitter } from 'lucide-react'
+import { BarChart3, Share2, Users, TrendingUp, Linkedin, Twitter, XCircle, ChevronDown, ChevronUp } from 'lucide-react'
 import { format, subDays, parseISO, startOfDay } from 'date-fns'
 import type { Share } from '@/lib/types'
+
+interface Dismissal {
+  moment_id: string
+  dismissed_at: string
+  users: { name: string | null; avatar_url: string | null; email: string } | null
+  sharing_moments: { title: string } | null
+}
 
 interface SessionUser {
   role?: string
@@ -49,7 +56,9 @@ export default function AnalyticsPage() {
   const { data: session } = useSession()
   const router = useRouter()
   const [shares, setShares] = useState<ShareWithJoins[]>([])
+  const [dismissals, setDismissals] = useState<Dismissal[]>([])
   const [loading, setLoading] = useState(true)
+  const [expandedMoment, setExpandedMoment] = useState<string | null>(null)
 
   const user = session?.user as SessionUser | undefined
   const isManager = user?.role === 'manager' || user?.role === 'admin'
@@ -62,10 +71,13 @@ export default function AnalyticsPage() {
   }, [session, isManager, router])
 
   useEffect(() => {
-    fetch('/api/shares?limit=200')
-      .then((r) => r.json())
-      .then((data) => {
-        setShares(Array.isArray(data) ? data : [])
+    Promise.all([
+      fetch('/api/shares?limit=200').then((r) => r.json()),
+      fetch('/api/analytics/dismissals').then((r) => r.json()),
+    ])
+      .then(([sharesData, dismissalsData]) => {
+        setShares(Array.isArray(sharesData) ? sharesData : [])
+        setDismissals(Array.isArray(dismissalsData) ? dismissalsData : [])
         setLoading(false)
       })
       .catch(() => setLoading(false))
@@ -355,6 +367,79 @@ export default function AnalyticsPage() {
             )}
           </div>
         </div>
+
+        {/* Dismissals by moment */}
+        <div className="bg-card rounded-2xl border border-border p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <XCircle className="h-4 w-4 text-muted-foreground" />
+            <h2 className="font-semibold text-foreground">Dismissals by Moment</h2>
+            <span className="ml-auto text-xs text-muted-foreground tabular-nums">{dismissals.length} total</span>
+          </div>
+
+          {dismissals.length === 0 ? (
+            <div className="h-24 flex items-center justify-center text-muted-foreground text-sm">
+              No dismissals recorded yet
+            </div>
+          ) : (() => {
+            // Group dismissals by moment
+            const byMoment: Record<string, { title: string; dismissers: Dismissal[] }> = {}
+            for (const d of dismissals) {
+              const key = d.moment_id
+              const title = d.sharing_moments?.title || d.moment_id.slice(0, 8)
+              if (!byMoment[key]) byMoment[key] = { title, dismissers: [] }
+              byMoment[key].dismissers.push(d)
+            }
+            const sorted = Object.entries(byMoment).sort((a, b) => b[1].dismissers.length - a[1].dismissers.length)
+
+            return (
+              <div className="space-y-2">
+                {sorted.map(([momentId, { title, dismissers }]) => {
+                  const isExpanded = expandedMoment === momentId
+                  return (
+                    <div key={momentId} className="border border-border rounded-xl overflow-hidden">
+                      <button
+                        onClick={() => setExpandedMoment(isExpanded ? null : momentId)}
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-secondary/50 transition-colors text-left"
+                      >
+                        <span className="flex-1 text-sm font-medium text-foreground truncate">{title}</span>
+                        <span className="text-xs text-muted-foreground tabular-nums shrink-0">
+                          {dismissers.length} {dismissers.length === 1 ? 'dismiss' : 'dismisses'}
+                        </span>
+                        {isExpanded
+                          ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                          : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        }
+                      </button>
+                      {isExpanded && (
+                        <div className="border-t border-border divide-y divide-border">
+                          {dismissers.map((d, i) => (
+                            <div key={i} className="flex items-center gap-3 px-4 py-2.5">
+                              <div className="h-6 w-6 rounded-full bg-secondary border border-border overflow-hidden shrink-0 flex items-center justify-center">
+                                {d.users?.avatar_url ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img src={d.users.avatar_url} alt={d.users.name || ''} className="h-full w-full object-cover" />
+                                ) : (
+                                  <span className="text-[9px] font-bold text-muted-foreground">
+                                    {(d.users?.name || d.users?.email || '?')[0].toUpperCase()}
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-sm text-foreground flex-1">{d.users?.name || d.users?.email || 'Unknown'}</span>
+                              <span className="text-xs text-muted-foreground shrink-0">
+                                {format(parseISO(d.dismissed_at), 'MMM d, h:mm a')}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )
+          })()}
+        </div>
+
       </div>
     </div>
   )

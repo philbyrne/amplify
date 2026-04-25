@@ -97,6 +97,15 @@ export default function MomentForm({ moment }: Props) {
     setParsed((p) => p ? { ...p, media_assets: p.media_assets?.filter((_, i) => i !== idx) } : p)
   }
 
+  function changeAssetType(idx: number, newType: MediaAsset['type']) {
+    setParsed((p) => {
+      if (!p?.media_assets) return p
+      const assets = [...p.media_assets]
+      assets[idx] = { ...assets[idx], type: newType }
+      return { ...p, media_assets: assets }
+    })
+  }
+
   function addAsset(type: MediaAsset['type']) {
     const url = prompt('Paste URL:')
     if (!url?.trim()) return
@@ -460,29 +469,49 @@ export default function MomentForm({ moment }: Props) {
                       {assets.map((asset) => {
                         const idx = allAssets.indexOf(asset)
                         return (
-                          <div key={idx} className="flex items-start gap-2 bg-secondary rounded-lg p-2.5 border border-border group">
-                            <a
-                              href={asset.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex-1 min-w-0 hover:text-primary transition-colors"
-                            >
-                              <p className="text-xs text-foreground truncate">{asset.caption || asset.url}</p>
-                              {asset.caption && (
-                                <p className="text-[10px] text-muted-foreground truncate">{asset.url}</p>
-                              )}
-                            </a>
-                            <div className="flex items-center gap-1 shrink-0">
-                              <a href={asset.url} target="_blank" rel="noopener noreferrer"
-                                className="text-muted-foreground hover:text-foreground transition-colors">
-                                <ExternalLink className="h-3 w-3" />
-                              </a>
-                              <button
-                                onClick={() => removeAsset(idx)}
-                                className="text-muted-foreground hover:text-destructive transition-colors"
+                          <div key={idx} className="bg-secondary rounded-lg p-2.5 border border-border group space-y-1.5">
+                            <div className="flex items-start gap-2">
+                              <a
+                                href={asset.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex-1 min-w-0 hover:text-primary transition-colors"
                               >
-                                <X className="h-3 w-3" />
-                              </button>
+                                <p className="text-xs text-foreground truncate">{asset.caption || asset.url}</p>
+                                {asset.caption && (
+                                  <p className="text-[10px] text-muted-foreground truncate">{asset.url}</p>
+                                )}
+                              </a>
+                              <div className="flex items-center gap-1 shrink-0">
+                                <a href={asset.url} target="_blank" rel="noopener noreferrer"
+                                  className="text-muted-foreground hover:text-foreground transition-colors">
+                                  <ExternalLink className="h-3 w-3" />
+                                </a>
+                                <button
+                                  onClick={() => removeAsset(idx)}
+                                  className="text-muted-foreground hover:text-destructive transition-colors"
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </div>
+                            </div>
+                            {/* Type switcher */}
+                            <div className="flex items-center gap-1">
+                              {ASSET_GROUPS.map(({ type: t, Icon: TIcon }) => (
+                                <button
+                                  key={t}
+                                  title={`Mark as ${t}`}
+                                  onClick={() => changeAssetType(idx, t)}
+                                  className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors ${
+                                    asset.type === t
+                                      ? 'bg-primary/20 text-primary border border-primary/30'
+                                      : 'text-muted-foreground hover:text-foreground border border-transparent hover:border-border'
+                                  }`}
+                                >
+                                  <TIcon className="h-2.5 w-2.5" />
+                                  {t}
+                                </button>
+                              ))}
                             </div>
                           </div>
                         )

@@ -24,6 +24,8 @@ export async function POST(
 
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
+    console.log('[dismiss] session email:', session.user.email, 'resolved user_id:', user.id, 'moment_id:', params.id)
+
     const { error: upsertError } = await supabase
       .from('dismissed_moments')
       .upsert(

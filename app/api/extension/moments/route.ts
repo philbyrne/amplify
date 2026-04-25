@@ -58,6 +58,8 @@ export async function GET(req: NextRequest) {
   const userShares = sharesResult.data
   const userDismissed = dismissedResult.data
 
+  console.log('[extension/moments] user:', user.id, 'active ids:', ids, 'dismissed rows:', userDismissed, 'share rows:', userShares)
+
   const excludedIds = new Set([
     ...(userShares || []).map((s) => s.moment_id),
     ...(userDismissed || []).map((d) => d.moment_id),

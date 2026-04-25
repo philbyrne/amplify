@@ -37,32 +37,29 @@ export async function GET(req: NextRequest) {
   const ids = (moments || []).map((m) => m.id)
   if (ids.length === 0) return NextResponse.json([])
 
-  // Find which of these moments this user has already shared or dismissed
+  // Find which moments this user has already shared or dismissed
+  // Note: no .in() filter — fetch all for this user then intersect in JS,
+  // matching the same approach used by /api/moments to avoid subtle mismatches
   const [sharesResult, dismissedResult] = await Promise.all([
     supabase
       .from('shares')
       .select('moment_id')
       .eq('user_id', user.id)
-      .in('moment_id', ids)
       .not('moment_id', 'is', null),
     supabase
       .from('dismissed_moments')
       .select('moment_id')
-      .eq('user_id', user.id)
-      .in('moment_id', ids),
+      .eq('user_id', user.id),
   ])
 
   if (sharesResult.error) console.error('[extension/moments] shares query error:', sharesResult.error)
   if (dismissedResult.error) console.error('[extension/moments] dismissed query error:', dismissedResult.error)
 
-  const userShares = sharesResult.data
-  const userDismissed = dismissedResult.data
-
-  console.log('[extension/moments] user:', user.id, 'active ids:', ids, 'dismissed rows:', userDismissed, 'share rows:', userShares)
+  console.log('[extension/moments] user:', user.id, 'dismissed rows:', dismissedResult.data?.length, 'share rows:', sharesResult.data?.length)
 
   const excludedIds = new Set([
-    ...(userShares || []).map((s) => s.moment_id),
-    ...(userDismissed || []).map((d) => d.moment_id),
+    ...(sharesResult.data || []).map((s) => s.moment_id),
+    ...(dismissedResult.data || []).map((d) => d.moment_id),
   ])
 
   // Attach total share counts + sharer avatars

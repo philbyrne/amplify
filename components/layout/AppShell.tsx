@@ -4,11 +4,13 @@ import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import {
   Zap, Rss, Trophy, User, Users, BarChart3, LogOut,
-  ChevronRight, PanelLeftClose, PanelLeftOpen, Loader2, Shield, X
+  ChevronRight, PanelLeftClose, PanelLeftOpen, Loader2, Shield, X,
+  Sun, Moon, Monitor,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import { useTheme, type Theme } from '@/components/ThemeProvider'
 
 let confettiFn: ((opts: object) => void) | null = null
 if (typeof window !== 'undefined') {
@@ -33,6 +35,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
 
+  const { theme, setTheme } = useTheme()
   const isAdmin = (session?.user as any)?.role === 'admin'
     || session?.user?.email === 'phil@intercom.io'
   const isManager = (session?.user as any)?.role === 'manager' || isAdmin
@@ -224,8 +227,42 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         )}
       </nav>
 
-      {/* User */}
-      <div className="p-3 border-t border-sidebar-border shrink-0">
+      {/* Theme switcher + User */}
+      <div className="p-3 border-t border-sidebar-border shrink-0 space-y-2">
+        {/* Theme switcher */}
+        {!collapsed && (
+          <div className="flex items-center gap-1 bg-secondary rounded-lg p-0.5">
+            {([
+              { value: 'light',  Icon: Sun,     label: 'Light'  },
+              { value: 'dark',   Icon: Moon,    label: 'Dark'   },
+              { value: 'system', Icon: Monitor, label: 'System' },
+            ] as { value: Theme; Icon: React.ElementType; label: string }[]).map(({ value, Icon, label }) => (
+              <button
+                key={value}
+                title={label}
+                onClick={() => setTheme(value)}
+                className={cn(
+                  'flex-1 flex items-center justify-center gap-1.5 py-1 rounded-md text-[11px] font-medium transition-colors',
+                  theme === value
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <Icon className="h-3 w-3" />
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+        {collapsed && (
+          <button
+            title={`Theme: ${theme}`}
+            onClick={() => setTheme(theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light')}
+            className="w-full flex justify-center py-1.5 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {theme === 'dark' ? <Moon className="h-3.5 w-3.5" /> : theme === 'light' ? <Sun className="h-3.5 w-3.5" /> : <Monitor className="h-3.5 w-3.5" />}
+          </button>
+        )}
         <div className={cn('flex items-center gap-3 rounded-lg', collapsed ? 'justify-center py-2' : 'px-2 py-2')}>
           {session?.user?.image ? (
             // eslint-disable-next-line @next/next/no-img-element

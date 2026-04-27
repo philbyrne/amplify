@@ -116,9 +116,23 @@ function renderMoments() {
   })
 }
 
+function avatarStack(sharers) {
+  if (!sharers || sharers.length === 0) return ''
+  const shown = sharers.slice(0, 4)
+  const html = shown.map(s => {
+    if (s.avatar_url) {
+      return `<img class="avatar" src="${escHtml(s.avatar_url)}" alt="${escHtml(s.name || '')}" />`
+    }
+    const initial = (s.name || '?')[0].toUpperCase()
+    return `<div class="avatar-initials">${initial}</div>`
+  }).join('')
+  return `<div class="avatar-stack">${html}</div>`
+}
+
 function momentCard(m) {
   const priority = m.parsed_content?.priority ?? 1
   const shareCount = m.share_count ?? 0
+  const sharers = m.sharers || []
   const { text: cdText, cls: cdCls, isWoo } = countdownFor(m.expires_at)
 
   const bolts = Array.from({ length: priority })
@@ -143,7 +157,7 @@ function momentCard(m) {
             <span class="woo-badge" id="woo-${m.id}" style="display:${isWoo ? 'inline' : 'none'}">Urgent</span>
           </div>
           <div class="shares-row">
-            <span class="shares-icon">👥</span>
+            ${avatarStack(sharers)}
             <span>${escHtml(shareCountText)}</span>
           </div>
         </div>

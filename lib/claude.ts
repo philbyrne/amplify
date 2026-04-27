@@ -15,9 +15,9 @@ export async function generateCopy(params: CopyGenerationRequest): Promise<strin
     audienceScore,
     lengthTarget,
     cta,
-    ctaUrl,
     differentiators,
     variationIndex,
+    selectedAssetContext,
   } = params
 
   const charLimit = platform === 'x' ? Math.min(lengthTarget ?? 140, 140) : (lengthTarget ?? 1300)
@@ -44,10 +44,12 @@ export async function generateCopy(params: CopyGenerationRequest): Promise<strin
 - Voice influence: ${voiceInfluenceScore}/100 — ${voiceInfluenceScore > 60 ? 'strongly mirror their personal writing style from the voice samples' : voiceInfluenceScore > 30 ? 'lightly incorporate their style' : 'use a neutral voice'}
 - Audience tailoring: ${audienceScore}/100 — ${audienceScore > 60 ? 'use terminology and framing specific to their professional audience' : audienceScore > 30 ? 'lightly tailor for their audience' : 'write for a general professional audience'}`
 
-  // If there's a CTA URL, embed it directly — no tracking placeholder needed
-  const linkInstruction = ctaUrl
-    ? `- Include this exact URL in the post, unchanged: ${ctaUrl} — do NOT use {{SHARE_URL}}`
-    : '- Include the placeholder {{SHARE_URL}} naturally in the post where a link would fit'
+  // URLs are shown separately (first comment tip) — never embed them in post body
+  const linkInstruction = '- Do NOT include any URLs or links anywhere in the post body. Keep the copy clean — the link will be shared separately.'
+
+  const assetContext = selectedAssetContext
+    ? `\n\nThe employee has chosen to post about this specific piece of content: ${selectedAssetContext}. Tailor the post to highlight or tease this asset — make it feel like that's the thing worth clicking on.`
+    : ''
 
   const ctaTextContext = cta
     ? `\n\nCTA intent (paraphrase naturally, do NOT use verbatim): "${cta}" — IMPORTANT: frame this as customer-facing language directed at the employee's audience (prospects/customers), not as an instruction to teammates to share something. The post speaks TO the audience, not ABOUT sharing.`
@@ -85,7 +87,7 @@ Hard style rules (violations make the post sound AI-generated):
 
   const userPrompt = `Content to share:
 Title: ${packageTitle}
-${packageBody ? `Details: ${packageBody}` : ''}
+${packageBody ? `Details: ${packageBody}` : ''}${assetContext}
 ${examplesContext}
 
 Tone guidance:${toneInstructions}${diffContext}

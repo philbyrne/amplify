@@ -78,6 +78,7 @@ export interface CopyGenerationRequest {
   ctaUrl?: string
   differentiators: string[]
   variationIndex: number
+  selectedAssetContext?: string  // caption/type of the asset the user chose to post about
 }
 
 export interface MediaAsset {

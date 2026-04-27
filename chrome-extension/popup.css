@@ -118,8 +118,28 @@ header {
 @keyframes pulse-badge { from { opacity: 1; } to { opacity: .55; } }
 
 /* Shares */
-.shares-row { display: flex; align-items: center; gap: 4px; color: var(--muted); font-size: 11px; }
+.shares-row { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 11px; }
 .shares-icon { opacity: .6; }
+
+/* Avatar stack */
+.avatar-stack { display: flex; align-items: center; }
+.avatar {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 1.5px solid var(--card);
+  object-fit: cover; flex-shrink: 0;
+  margin-right: -5px;
+  background: var(--border);
+}
+.avatar-initials {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 1.5px solid var(--card);
+  background: var(--primary); color: #fff;
+  font-size: 8px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-right: -5px;
+}
+.avatar-stack .avatar:last-child,
+.avatar-stack .avatar-initials:last-child { margin-right: 0; }
 
 /* Share button */
 .share-btn {

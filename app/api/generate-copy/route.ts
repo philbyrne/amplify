@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
       ctaUrl,
       differentiators,
       variationIndex,
+      selectedAssetContext,
     } = body
 
     if (!platform || !packageTitle) {
@@ -52,6 +53,7 @@ export async function POST(req: NextRequest) {
       ctaUrl: typeof ctaUrl === 'string' ? ctaUrl : undefined,
       differentiators: Array.isArray(differentiators) ? differentiators : [],
       variationIndex: typeof variationIndex === 'number' ? variationIndex : 0,
+      selectedAssetContext: typeof selectedAssetContext === 'string' ? selectedAssetContext : undefined,
     }
 
     const copy = await generateCopy(request)
